@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import { geoEqualEarth } from "d3-geo";
 import type { City } from "@/data/cities";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ export function WorldMap({
   onCityClick,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const lastTappedCity = useRef<string | null>(null);
 
   const projection = useMemo(
     () => geoEqualEarth().scale(MAP_SCALE).translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]),
@@ -46,6 +47,36 @@ export function WorldMap({
     [cities, projection]
   );
 
+  const handleTouchCity = useCallback(
+    (e: React.TouchEvent, city: City) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = svgRef.current?.getBoundingClientRect() ?? null;
+      if (lastTappedCity.current === city.name) {
+        // Second tap on same city — pin it
+        onCityClick(city);
+        lastTappedCity.current = null;
+        onCityHover(null, null);
+      } else {
+        // First tap — show tooltip
+        lastTappedCity.current = city.name;
+        onCityHover(city, rect);
+      }
+    },
+    [onCityClick, onCityHover]
+  );
+
+  const handleTouchSvg = useCallback(
+    (e: React.TouchEvent) => {
+      // Only dismiss if tapping empty space (not a city dot)
+      if ((e.target as Element).tagName === "svg" || (e.target as Element).tagName === "rect" || (e.target as Element).tagName === "image") {
+        lastTappedCity.current = null;
+        onCityHover(null, null);
+      }
+    },
+    [onCityHover]
+  );
+
   return (
     <div className="relative w-full h-full">
       <svg
@@ -54,8 +85,9 @@ export function WorldMap({
         className="w-full h-full"
         preserveAspectRatio="xMidYMid meet"
         onMouseLeave={() => onCityHover(null, null)}
+        onTouchStart={handleTouchSvg}
         role="img"
-        aria-label="Interactive world timezone map — hover or click city dots"
+        aria-label="Interactive world timezone map — hover or tap city dots"
       >
         <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="transparent" />
 
@@ -101,20 +133,13 @@ export function WorldMap({
                     className="pointer-events-none"
                   />
                 )}
+                {/* Invisible hit-area circle for easier tapping */}
                 <circle
                   cx={city.x}
                   cy={city.y}
-                  r={isActive ? 6.5 : 4.5}
-                  className={cn(
-                    "cursor-pointer transition-all duration-100",
-                    isPinned
-                      ? "fill-sky-400 stroke-white stroke-[1.5px]"
-                      : isHighlighted
-                        ? "fill-yellow-300 stroke-white stroke-[1.5px]"
-                        : isHovered
-                          ? "fill-sky-200 stroke-white stroke-[1.25px]"
-                          : "fill-sky-200/80 stroke-white/50 stroke-[1px]"
-                  )}
+                  r={14}
+                  fill="transparent"
+                  className="cursor-pointer"
                   tabIndex={0}
                   role="button"
                   aria-label={`${city.name} — click to pin for comparison`}
@@ -124,7 +149,24 @@ export function WorldMap({
                   }}
                   onMouseLeave={() => onCityHover(null, null)}
                   onClick={() => onCityClick(city)}
+                  onTouchStart={(e) => handleTouchCity(e, city)}
                   onKeyDown={(e) => e.key === "Enter" && onCityClick(city)}
+                />
+                {/* Visible dot — pointer-events-none so events go through to hit area */}
+                <circle
+                  cx={city.x}
+                  cy={city.y}
+                  r={isActive ? 6.5 : 4.5}
+                  className={cn(
+                    "pointer-events-none transition-all duration-100",
+                    isPinned
+                      ? "fill-sky-400 stroke-white stroke-[1.5px]"
+                      : isHighlighted
+                        ? "fill-yellow-300 stroke-white stroke-[1.5px]"
+                        : isHovered
+                          ? "fill-sky-200 stroke-white stroke-[1.25px]"
+                          : "fill-sky-200/80 stroke-white/50 stroke-[1px]"
+                  )}
                 />
               </g>
             );

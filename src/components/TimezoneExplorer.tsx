@@ -265,26 +265,69 @@ export function TimezoneExplorer() {
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-5">
 
         {/* ── Header ── */}
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight dark:text-white text-slate-900">
-              WhenWhere
-            </h1>
-            <p className="text-sm dark:text-slate-400 text-slate-500 mt-0.5">
-              Hover to preview · Click to pin · Compare up to 4 cities
-            </p>
+        <header className="space-y-3">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight dark:text-white text-slate-900">
+                WhenWhere
+              </h1>
+              <p className="text-sm dark:text-slate-400 text-slate-500 mt-0.5">
+                <span className="hidden sm:inline">Hover</span><span className="sm:hidden">Tap</span> to preview · Click to pin · Compare up to 4 cities
+              </p>
+            </div>
+            <div className="flex items-center gap-2 sm:hidden">
+              {/* Quick share — mobile only */}
+              <button
+                onClick={handleShare}
+                className={cn(
+                  "flex items-center justify-center rounded-xl border p-2 transition-colors",
+                  copied
+                    ? "dark:border-green-500/30 border-green-400 dark:bg-green-500/10 bg-green-50"
+                    : "dark:border-white/10 border-slate-200 dark:bg-white/5 bg-white dark:hover:bg-white/10 hover:bg-slate-50"
+                )}
+                aria-label="Copy shareable link to clipboard"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Link className="h-4 w-4 text-slate-400" />
+                )}
+              </button>
+              {/* Theme toggle — mobile only */}
+              <button
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                className={cn(
+                  "flex items-center justify-center rounded-xl border p-2 transition-colors",
+                  "dark:border-white/10 border-slate-200",
+                  "dark:bg-white/5 bg-white",
+                  "dark:hover:bg-white/10 hover:bg-slate-50"
+                )}
+                aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              >
+                {mounted ? (
+                  theme === "dark" ? (
+                    <Sun className="h-4 w-4 text-slate-400" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-slate-500" />
+                  )
+                ) : (
+                  <Moon className="h-4 w-4 text-slate-400" />
+                )}
+              </button>
+            </div>
           </div>
-          <div className="flex items-center flex-wrap gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <CitySearch
               onSelect={handleCityPin}
               onHighlight={setHighlightedCities}
               pinnedCities={pinnedCities}
             />
             <HomeTimezonePicker value={homeTz} onChange={setHomeTz} />
+            {/* Theme toggle — desktop only, inline with controls */}
             <button
               onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
               className={cn(
-                "flex items-center justify-center rounded-xl border p-2 transition-colors",
+                "hidden sm:flex items-center justify-center rounded-xl border p-2 transition-colors",
                 "dark:border-white/10 border-slate-200",
                 "dark:bg-white/5 bg-white",
                 "dark:hover:bg-white/10 hover:bg-slate-50"
@@ -311,7 +354,7 @@ export function TimezoneExplorer() {
             "dark:border-white/10 border-slate-300",
             "dark:bg-slate-700 bg-slate-50",
             "shadow-[0_20px_60px_-20px_rgba(0,0,0,0.4)]",
-            "min-h-[300px] aspect-[1000/520]"
+            "aspect-[2/1] sm:aspect-[1000/520]"
           )}
         >
           {mounted ? (
@@ -335,9 +378,11 @@ export function TimezoneExplorer() {
             <div
               className="fixed z-50 rounded-xl border dark:border-white/15 border-slate-200 dark:bg-slate-950/90 bg-white/95 px-3 py-2 text-sm shadow-xl backdrop-blur"
               style={{
-                left: tooltip.x,
+                left: Math.max(16, Math.min(tooltip.x, (typeof window !== "undefined" ? window.innerWidth : 9999) - 16)),
                 top: tooltip.y,
-                transform: "translate(-50%, calc(-100% - 6px))",
+                transform: tooltip.y < 100
+                  ? "translate(-50%, 8px)"
+                  : "translate(-50%, calc(-100% - 6px))",
               }}
               onMouseEnter={cancelDismiss}
               onMouseLeave={scheduleDismiss}
@@ -375,7 +420,8 @@ export function TimezoneExplorer() {
               "rounded-3xl border p-5",
               "dark:border-white/10 border-slate-200",
               "dark:bg-white/[0.03] bg-white",
-              "transition-all duration-200"
+              "transition-all duration-200",
+              !hoveredCity && "hidden sm:block"
             )}
           >
             {hoveredCity && hoveredDerived ? (
@@ -418,11 +464,11 @@ export function TimezoneExplorer() {
                   hour={hoveredDerived.zoneTime.hour}
                   minute={hoveredDerived.zoneTime.minute}
                   second={hoveredDerived.zoneTime.second}
-                  size={100}
+                  size={80}
                 />
               </div>
             ) : homeDerived ? (
-              /* Default state: show home timezone */
+              /* Default state: show home timezone — wrapper is hidden on mobile */
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <div className="text-xs uppercase tracking-widest dark:text-slate-400 text-slate-500">
@@ -470,7 +516,7 @@ export function TimezoneExplorer() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {pinnedDerived.map((d) => (
                 <div
                   key={d.city.name}
@@ -552,9 +598,10 @@ export function TimezoneExplorer() {
                   <div
                     key={`empty-${i}`}
                     className={cn(
-                      "rounded-2xl border-2 border-dashed flex items-center justify-center min-h-[200px]",
+                      "rounded-2xl border-2 border-dashed flex items-center justify-center min-h-[120px] sm:min-h-[200px]",
                       "dark:border-white/5 border-slate-200",
-                      "dark:text-slate-600 text-slate-300 text-xs text-center px-4"
+                      "dark:text-slate-600 text-slate-300 text-xs text-center px-4",
+                      i > 0 && "hidden sm:flex"
                     )}
                   >
                     Click a city on the map or search to add

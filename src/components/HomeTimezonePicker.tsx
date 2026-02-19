@@ -99,8 +99,8 @@ export function HomeTimezonePicker({ value, onChange }: Props) {
         aria-expanded={open}
       >
         <Globe className="h-4 w-4 text-slate-400 flex-shrink-0" />
-        <span className="max-w-28 truncate">{displayLabel}</span>
-        <span className="text-slate-400 text-xs shrink-0">{currentOffset}</span>
+        <span className="max-w-[4.5rem] sm:max-w-28 truncate">{displayLabel}</span>
+        <span className="text-slate-400 text-xs shrink-0 hidden sm:inline">{currentOffset}</span>
         <ChevronDown
           className={cn(
             "h-3.5 w-3.5 text-slate-400 transition-transform duration-200",
@@ -110,7 +110,7 @@ export function HomeTimezonePicker({ value, onChange }: Props) {
       </button>
 
       {open && (
-        <div className="absolute top-full mt-1.5 right-0 z-50 w-72 rounded-xl border dark:border-white/10 border-slate-200 dark:bg-slate-900 bg-white shadow-xl overflow-hidden">
+        <div className="absolute top-full mt-1.5 right-0 z-50 w-72 max-w-[calc(100vw-2rem)] rounded-xl border dark:border-white/10 border-slate-200 dark:bg-slate-900 bg-white shadow-xl overflow-hidden">
           <div className="p-2 border-b dark:border-white/10 border-slate-100">
             <input
               ref={searchRef}

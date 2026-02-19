@@ -103,7 +103,7 @@ export function CitySearch({ onSelect, onHighlight, pinnedCities }: Props) {
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative flex-1 sm:flex-initial">
       <div
         className={cn(
           "flex items-center gap-2 rounded-xl border px-3 py-2 transition-colors",
@@ -125,7 +125,7 @@ export function CitySearch({ onSelect, onHighlight, pinnedCities }: Props) {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={handleKeyDown}
-          className="bg-transparent text-sm outline-none w-36 dark:text-white text-slate-900 placeholder:text-slate-400"
+          className="bg-transparent text-sm outline-none w-full sm:w-36 dark:text-white text-slate-900 placeholder:text-slate-400"
           aria-label="Search for a city"
           aria-expanded={open && results.length > 0}
           aria-autocomplete="list"
@@ -145,7 +145,7 @@ export function CitySearch({ onSelect, onHighlight, pinnedCities }: Props) {
 
       {open && results.length > 0 && (
         <div
-          className="absolute top-full mt-1.5 left-0 z-50 w-56 max-h-72 overflow-y-auto rounded-xl border dark:border-white/10 border-slate-200 dark:bg-slate-900 bg-white shadow-xl"
+          className="absolute top-full mt-1.5 left-0 z-50 w-[calc(100vw-2rem)] sm:w-56 max-h-72 overflow-y-auto rounded-xl border dark:border-white/10 border-slate-200 dark:bg-slate-900 bg-white shadow-xl"
           role="listbox"
         >
           {results.map((city, i) => {
@@ -177,7 +177,7 @@ export function CitySearch({ onSelect, onHighlight, pinnedCities }: Props) {
       )}
 
       {open && query.trim().length > 0 && results.length === 0 && (
-        <div className="absolute top-full mt-1.5 left-0 z-50 w-56 rounded-xl border dark:border-white/10 border-slate-200 dark:bg-slate-900 bg-white shadow-xl px-3 py-4 text-sm text-center text-slate-500">
+        <div className="absolute top-full mt-1.5 left-0 z-50 w-[calc(100vw-2rem)] sm:w-56 rounded-xl border dark:border-white/10 border-slate-200 dark:bg-slate-900 bg-white shadow-xl px-3 py-4 text-sm text-center text-slate-500">
           No cities found
         </div>
       )}
